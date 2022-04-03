@@ -7,6 +7,7 @@ let curTab;
 let browserOpenPromise = puppeteer.launch({
     headless: false,
     debuggingPort: null,
+    defaultViewport:null,
     args: ["--start-maximized"]
 });
 
@@ -40,7 +41,32 @@ browserOpenPromise //fullfill
 })
 .then(function (){
     console.log("logged into hackerrank successfully");
+    //waitAndClick will wait for the selector to load, and then click on the node
+    let algorithmTabWillBeOpenedPromise = waitAndClick("div[data-automation='algorithms']");
+    return algorithmTabWillBeOpenedPromise;
+})
+.then(function(){
+    console.log("algorithm page opened");
 })
 .catch(function(err){
     console.log(err);
 });
+
+function waitAndClick(algoBtn){
+    let waitClickPromise = new Promise(function(resolve, reject){
+        let waitForSelectorPromise = curTab.waitForSelector(algoBtn);
+        waitForSelectorPromise.then(function (){
+            console.log("algo btn is found");
+            let clickPromise = curTab.click(algoBtn);
+            return clickPromise;
+        })
+        .then(function (){
+            console.log("algo btn is clicked");
+            //resolve();
+        })
+        .catch(function (err){
+            console.log(err);
+        })
+    });
+    return waitClickPromise;
+}
