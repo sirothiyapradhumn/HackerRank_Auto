@@ -11,8 +11,7 @@ let browserOpenPromise = puppeteer.launch({
     args: ["--start-maximized"]
 });
 
-browserOpenPromise //fullfill
-    .then(function (browser){
+browserOpenPromise.then(function (browser){   // fullfill
     console.log("browser is open");
     let allTabsPromise = browser.pages(); // sare page k info. leke ayege from browser
     return allTabsPromise; // ↓ return karega
@@ -47,13 +46,33 @@ browserOpenPromise //fullfill
 })
 .then(function(){
     console.log("algorithm page opened");
+    let allQuesPromise = curTab.waitForSelector('a[data-analytics="ChallengeListChallengeName" ]');
+    return allQuesPromise;
+})
+.then(function(){
+    function getAllQuesLinks(){
+        let allElemArr = document.querySelectorAll('a[data-analytics="ChallengeListChallengeName" ]');
+        let linksArr =[];
+        for(let i = 0; i<allElemArr.length; i++){
+            linksArr.push(allElemArr[i].getAttribute("href"));
+        }
+        return linksArr;
+    }
+
+    let linksArrPromise = curTab.evaluate(getAllQuesLinks);
+    return linksArrPromise;
+})
+.then(function(linksArr){
+    //question solve karna hai 
+    console.log("links to all question received");
+    console.log(linksArr);
 })
 .catch(function(err){
     console.log(err);
 });
 
 function waitAndClick(algoBtn){
-    let waitClickPromise = new Promise(function(resolve, reject){
+    let waitClickPromise = new Promise(function( resolve, reject){
         let waitForSelectorPromise = curTab.waitForSelector(algoBtn);
         waitForSelectorPromise.then(function (){
             console.log("algo btn is found");
@@ -62,7 +81,8 @@ function waitAndClick(algoBtn){
         })
         .then(function (){
             console.log("algo btn is clicked");
-            //resolve();
+            resolve();
+            
         })
         .catch(function (err){
             console.log(err);
