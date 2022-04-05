@@ -2,6 +2,8 @@ const puppeteer = require("puppeteer");
 
 let {email, password} = require("./secrets");
 
+let {answer} = require("./codes");
+
 let curTab;
 
 let browserOpenPromise = puppeteer.launch({
@@ -66,6 +68,11 @@ browserOpenPromise.then(function (browser){   // fullfill
     //question solve karna hai 
     console.log("links to all question received");
     console.log(linksArr);
+    let questionWillBeSolvedPromise = questionSolver(linksArr[0], 0);
+    return questionWillBeSolvedPromise;
+})
+.then(function(){
+    console.log("question solved");
 })
 .catch(function(err){
     console.log(err);
@@ -85,8 +92,77 @@ function waitAndClick(algoBtn){
             
         })
         .catch(function (err){
-            console.log(err);
+            reject(err);
         })
     });
     return waitClickPromise;
+}
+
+function questionSolver(url, idx){
+    return new Promise(function(resolve, reject){
+        let fullLink = `https://www.hackerrank.com${url}`;
+        let goToQuesPagePromise = curTab.goto(fullLink);
+        goToQuesPagePromise.then(function(){
+            console.log("question opened");
+            //tick the custom input box mark
+            let waitForCheckBoxAndClickPromise = waitAndClick(".checkbox-input");
+            return waitForCheckBoxAndClickPromise;
+        })
+        .then(function(){
+            //select the box where code will be typed
+            let waitForTextBoxPromise = curTab.waitForSelector(".custominput");
+            return waitForTextBoxPromise;
+        })
+        .then(function(){
+            let codeWillBeTypedPromise = curTab.type(".custominput", answer[idx]);
+            return codeWillBeTypedPromise;
+        })
+        .then(function(){
+            //control key is pressed promise
+            let ctrlPressedPromise = curTab.keyboard.press("Control");
+            return ctrlPressedPromise;
+        })
+        .then(function(){
+            // a key is pressed promise
+            let aKeyPressedPromise = curTab.keyboard.press("a");
+            return aKeyPressedPromise;
+        })
+        .then(function(){
+            // x key is pressed promise
+            let xKeyPressedPromise = curTab.keyboard.press("x");
+            return xKeyPressedPromise;
+        })
+        .then(function(){
+            // select the editor promise
+            let cusorOnEditorPromise  = curTab.click(".monaco-editor.no-user-select.vs");
+            return cusorOnEditorPromise;
+        })
+        .then(function(){
+            // a key is pressed promise
+            let aKeyPressedPromise = curTab.keyboard.press("a");
+            return aKeyPressedPromise;
+        })
+        .then(function(){
+            // v key is pressed promise
+            let vKeyPressedPromise = curTab.keyboard.press("v");
+            return vKeyPressedPromise;
+        })
+        .then(function(){
+            // submit Btn is pressed promise
+            let submitBtnClickedPromise = curTab.click(".hr-monaco-submit");
+            return submitBtnClickedPromise;
+        })
+        .then(function(){
+            let ctrlDownPromise = curTab.keyboard.up("Control");
+            return ctrlDownPromise;
+        })
+        .then(function(){
+            console.log("code submitted successfully");
+            resolve();
+        })
+        .catch(function(err){
+            reject(err);
+        });
+    });
+
 }
