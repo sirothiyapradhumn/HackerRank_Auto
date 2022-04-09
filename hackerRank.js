@@ -60,7 +60,7 @@ browserOpenPromise.then(function (browser){   // fullfill
         }
         return linksArr;
     }
-
+                                // evaluate -> help to run function 
     let linksArrPromise = curTab.evaluate(getAllQuesLinks);
     return linksArrPromise;
 })
@@ -69,10 +69,15 @@ browserOpenPromise.then(function (browser){   // fullfill
     console.log("links to all question received");
     console.log(linksArr);
     let questionWillBeSolvedPromise = questionSolver(linksArr[0], 0);
+    for(let i = 1; i<linksArr.length; i++){
+        questionWillBeSolvedPromise  = questionWillBeSolvedPromise.then(function(){
+            return questionSolver(linksArr[i], i);
+        })
+    }
     return questionWillBeSolvedPromise;
 })
 .then(function(){
-    console.log("question solved");
+    console.log("question is solved");
 })
 .catch(function(err){
     console.log(err);
@@ -119,7 +124,7 @@ function questionSolver(url, idx){
         })
         .then(function(){
             //control key is pressed promise
-            let ctrlPressedPromise = curTab.keyboard.press("Control");
+            let ctrlPressedPromise = curTab.keyboard.down("Control");
             return ctrlPressedPromise;
         })
         .then(function(){
